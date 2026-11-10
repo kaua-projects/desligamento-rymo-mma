@@ -4,7 +4,7 @@
 <title>Pesquisa de Desligamento</title>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--p:#7a1280;--pl:#f6eaf7;--bg:#f4f5f7;--c:#fff;--t:#1b1b1f;--m:#6b6b76;--b:#d9d9e0;--ok:#1f9d55;--bad:#d64545}
+:root{--p:#1d4ed8;--pl:#e8f0fe;--bg:#f4f5f7;--c:#fff;--t:#1b1b1f;--m:#6b6b76;--b:#d9d9e0;--ok:#1f9d55;--bad:#d64545}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 Lexend,system-ui,sans-serif}
 header{background:var(--c);border-bottom:1px solid var(--b);position:sticky;top:0;z-index:5}
 .bar{max-width:1100px;margin:auto;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -43,33 +43,33 @@ input[type=radio],input[type=checkbox]{accent-color:var(--p);width:17px;height:1
 </main>
 <script>
 /* ===== CONFIGURAÇÃO ===== */
-const API='https://script.google.com/macros/s/AKfycbyA0mnLn91JLfTJzCjdKE192Ej6yHafAPkjUBmyiHud0OkAkjHgvWbNb2pWkgEp6upvcA/exec';            // URL do Web App do Apps Script (vazio = modo teste, salva no navegador)
+const API='https://script.google.com/macros/s/AKfycbyA0mnLn91JLfTJzCjdKE192Ej6yHafAPkjUBmyiHud0OkAkjHgvWbNb2pWkgEp6upvcA/exec'
 const LOCAL_PW='rh2026'; // senha usada SOMENTE no modo teste
 /* ======================== */
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const SC=['Insatisfeito','Pouco satisfeito','Satisfeito','Muito satisfeito'];
-const EMP=['Rymo','MMA'],TIPOS=['Pedido de demissão','Demissão sem justa causa','Demissão por justa causa','Término de contrato','Acordo (art. 484-A)','Outro'];
+const DEP=['Administrativo','Loja','Comercial','Marketing','Estoque','Expedição','Compras','Produção'],EMP=['Rymo','MMA'],TIPOS=['Pedido de demissão','Demissão sem justa causa','Demissão por justa causa','Término de contrato','Acordo (art. 484-A)','Outro'];
 const TEMPO=['Até 6 meses','6 meses a 1 ano','1 a 3 anos','3 a 5 anos','Mais de 5 anos'],REG=['Presencial','Híbrido','Home-office'];
 const MOT=['Aumento de salário','Problemas com a liderança','Problemas com os pares','Processos da empresa','Pacote de benefícios','Mudança de cidade/estado/país','Adaptação na empresa','Modelo de trabalho','Outros'];
 const MX=[
 {k:'lid',n:'Liderança',t:'Como você avalia a sua liderança imediata?',q:['Relacionamento com o líder','Autonomia na execução das tarefas','Frequência de feedbacks recebidos','Abertura para dar feedbacks ao líder','Impacto da liderança em seu desenvolvimento','Clima organizacional na sua equipe'],x:'O que mais você pode nos falar sobre sua liderança imediata?'},
 {k:'cre',n:'Crescimento',t:'Como você avalia as oportunidades de crescimento profissional?',q:['Oportunidades de desenvolvimento e aquisição de novas competências','Clareza de critérios para movimentações salariais (reconhecimentos e promoções)'],x:'O que mais você pode nos falar sobre crescimento profissional?'},
 {k:'ent',n:'Entregas',t:'Como você avalia as suas entregas de resultado?',q:['Havia alinhamento com o que era esperado das suas entregas','Suas entregas individuais para a empresa','Suas metas impactaram no alcance dos objetivos estratégicos','Você gerou valor para o cliente (interno ou externo)'],x:'O que mais você pode nos falar sobre sua entrega de resultados?'},
-{k:'emp',n:'Empresa',t:'Como você avalia a empresa?',q:['Os valores são exercidos pelos líderes da empresa','Alinhamento dos processos entre as áreas','Canais de comunicação interna (chat/e-mail)','Infraestrutura','Ambiente organizacional','Benefícios','Área de Gente e Cultura','Eventos e ações comemorativas'],x:'O que mais você pode nos falar sobre como você vê a empresa?'}];
+{k:'emp',n:'Empresa',t:'Como você avalia a empresa?',q:['Os valores são exercidos pelos líderes da empresa','Alinhamento dos processos entre as áreas','Canais de comunicação interna (chat/e-mail)','Infraestrutura','Ambiente organizacional','Benefícios','Área de RH','Eventos e ações comemorativas'],x:'O que mais você pode nos falar sobre como você vê a empresa?'}];
 const K=(m,i)=>m.n+' | '+m.q[i],KT=m=>m.n+' - comentário';
 const radios=(name,arr,cb)=>arr.map(o=>`<label class="opt"><input type="radio" name="${name}" value="${esc(o)}" ${cb?`onchange="${cb}"`:''}>${esc(o)}</label>`).join('');
 const sel=(name,arr,ph)=>`<select name="${name}"><option value="">${ph}</option>${arr.map(o=>`<option>${esc(o)}</option>`).join('')}</select>`;
-const ta=(name,t)=>`<section class="card"><h3>${t}</h3><textarea name="${name}"></textarea></section>`;
+const ta=(name,t,o)=>`<section class="card"><h3>${t}${o?'':' *'}</h3><textarea name="${name}"></textarea></section>`;
 function build(){
 let h=`<section class="card"><h2>Entrevista de Desligamento</h2><p class="m">Caro colaborador(a), esta é a Pesquisa de Desligamento. O objetivo é coletar feedbacks do ex-colaborador(a) para entender melhor o ambiente de trabalho e como melhorá-lo. Aguardamos sua resposta.</p></section>
-<section class="card"><div class="g2"><div><h3>Qual seu nome completo? *</h3><input type="text" name="Nome"></div><div><h3>Empresa *</h3>${sel('Empresa',EMP,'Selecione')}</div>
-<div><h3>Qual seu departamento? *</h3><input type="text" name="Departamento"></div><div><h3>Qual era o seu regime de trabalho?</h3>${sel('Regime',REG,'Selecione')}</div>
-<div><h3>Tipo de desligamento *</h3>${sel('Tipo de desligamento',TIPOS,'Selecione')}</div><div><h3>Tempo de casa</h3>${sel('Tempo de casa',TEMPO,'Selecione')}</div>
-<div><h3>Data de desligamento</h3><input type="date" name="Data de desligamento"></div></div></section>
-<section class="card hide" id="mot"><h3>Em caso de desligamento voluntário, quais os motivos o levaram a migrar para outra oportunidade?</h3>${radios('Motivo (voluntário)',MOT)}</section>
+<section class="card"><div class="g2"><div><h3>Qual seu nome completo? (opcional)</h3><input type="text" name="Nome"></div><div><h3>Empresa *</h3>${sel('Empresa',EMP,'Selecione')}</div>
+<div><h3>Qual seu departamento? *</h3>${sel('Departamento',DEP,'Selecione')}</div><div><h3>Qual era o seu regime de trabalho? *</h3>${sel('Regime',REG,'Selecione')}</div>
+<div><h3>Tipo de desligamento *</h3>${sel('Tipo de desligamento',TIPOS,'Selecione')}</div><div><h3>Tempo de casa *</h3>${sel('Tempo de casa',TEMPO,'Selecione')}</div>
+<div><h3>Data de desligamento *</h3><input type="date" name="Data de desligamento"></div></div></section>
+<section class="card hide" id="mot"><h3>Em caso de desligamento voluntário, quais os motivos o levaram a migrar para outra oportunidade? *</h3>${radios('Motivo (voluntário)',MOT)}</section>
 ${ta('Ações da empresa','Na sua opinião, quais ações práticas a empresa poderia ter realizado para que o seu desligamento não acontecesse?')}`;
-MX.forEach(m=>{h+=`<section class="card"><h3>${m.t}</h3><div class="sw"><table class="mx"><tr><th></th>${SC.map(s=>`<th>${s}</th>`).join('')}</tr>${m.q.map((q,i)=>`<tr><td>${q}</td>${SC.map((s,j)=>`<td><input type="radio" name="${m.k}_${i}" value="${j+1}" aria-label="${s}"></td>`).join('')}</tr>`).join('')}</table></div></section>${ta(KT(m),m.x)}`});
-h+=`<section class="card"><h3>Você voltaria a trabalhar na empresa? *</h3>${radios('Voltaria',['Sim','Não'])}</section>${ta('Voltaria - por quê','Se sim, em qual área/função, e por quê?')}
+MX.forEach(m=>{h+=`<section class="card"><h3>${m.t} *</h3><div class="sw"><table class="mx"><tr><th></th>${SC.map(s=>`<th>${s}</th>`).join('')}</tr>${m.q.map((q,i)=>`<tr><td>${q}</td>${SC.map((s,j)=>`<td><input type="radio" name="${m.k}_${i}" value="${j+1}" aria-label="${s}"></td>`).join('')}</tr>`).join('')}</table></div></section>${ta(KT(m),m.x)}`});
+h+=`<section class="card"><h3>Você voltaria a trabalhar na empresa? *</h3>${radios('Voltaria',['Sim','Não'])}</section>${ta('Voltaria - por quê','Se sim, em qual área/função, e por quê? (obrigatório se respondeu Sim)',1)}
 <section class="card"><h3>De 0 a 10, qual a probabilidade de você recomendar nossa empresa a um amigo ou familiar? *</h3><div class="nps">${[...Array(11).keys()].map(n=>`<label><input type="radio" name="NPS" value="${n}">${n}</label>`).join('')}</div></section>
 ${ta('Comentário final','Deixe um comentário, elogio ou sugestão de melhoria')}<div id="fe" class="err"></div><button class="btn" id="sb">Enviar pesquisa</button>`;
 $('#f').innerHTML=h;
@@ -79,7 +79,13 @@ for(const n of ['Nome','Empresa','Departamento','Regime','Tipo de desligamento',
 d['Motivo (voluntário)']=d['Tipo de desligamento']==='Pedido de demissão'?v('Motivo (voluntário)'):'';
 MX.forEach(m=>{m.q.forEach((q,i)=>{d[K(m,i)]=v(m.k+'_'+i)});d[KT(m)]=v(KT(m))});
 d['Voltaria']=v('Voltaria');d['NPS']=v('NPS');
-if(!d.Nome||!d.Empresa||!d.Departamento||!d['Tipo de desligamento']||!d.Voltaria||d.NPS===''){$('#fe').textContent='Preencha os campos obrigatórios (*): nome, empresa, departamento, tipo de desligamento, "voltaria" e nota de recomendação.';return false}
+const miss=[],need=(n,l)=>{if(!d[n])miss.push(l)};
+['Empresa','Departamento','Regime','Tipo de desligamento','Tempo de casa','Data de desligamento','Ações da empresa','Comentário final','Voltaria'].forEach(n=>need(n,n));
+if(d['Tipo de desligamento']==='Pedido de demissão')need('Motivo (voluntário)','Motivo da saída');
+MX.forEach(m=>{m.q.forEach((q,i)=>need(K(m,i),m.n+': '+q));need(KT(m),m.n+' - comentário')});
+if(d.Voltaria==='Sim')need('Voltaria - por quê','Voltaria: área/função e por quê');
+if(d.NPS==='')miss.push('Nota de recomendação (NPS)');
+if(miss.length){$('#fe').textContent='Preencha todos os campos obrigatórios (*). Faltam: '+miss.slice(0,5).join('; ')+(miss.length>5?' e mais '+(miss.length-5):'')+'.';$('#fe').scrollIntoView({block:'center'});return false}
 $('#fe').textContent='';$('#sb').disabled=true;$('#sb').textContent='Enviando...';
 try{if(API)await fetch(API,{method:'POST',mode:'no-cors',body:JSON.stringify(d)});
 else{d['Data de resposta']=new Date().toISOString();const a=JSON.parse(localStorage.getItem('deslig')||'[]');a.push(d);localStorage.setItem('deslig',JSON.stringify(a))}
@@ -116,7 +122,7 @@ $('#out').innerHTML=`<div class="kpis"><div class="kpi">Respostas<b>${n}</b></di
 <div class="card"><h3>Tempo de casa</h3>${bars(tc,mx(tc))}</div>
 <div class="card"><h3>Departamentos</h3>${bars(dep,mx(dep))}</div></div>
 <div class="card sw" style="margin-top:14px"><h3>Respostas (clique para ver detalhes)</h3><table class="tb"><tr><th>Data</th><th>Nome</th><th>Empresa</th><th>Departamento</th><th>Tipo</th><th>Média</th><th>NPS</th><th>Voltaria</th></tr>
-${R.map((r,i)=>{const mm=mean(MX.flatMap(m=>m.q.map((_,j)=>num(r[K(m,j)]))));return`<tr class="r" onclick="this.nextElementSibling.classList.toggle('hide')"><td>${esc(String(r['Data de resposta']||'').slice(0,10))}</td><td>${esc(r.Nome)}</td><td>${esc(r.Empresa)}</td><td>${esc(r.Departamento)}</td><td>${esc(r['Tipo de desligamento'])}</td><td>${f2(mm)}</td><td>${esc(r.NPS)}</td><td>${esc(r.Voltaria)}</td></tr><tr class="hide"><td colspan="8" class="dt">${Object.entries(r).filter(([k,v])=>v!==''&&!/^(Nome|Empresa|Departamento|Tipo de desligamento|NPS|Voltaria|Data de resposta)$/.test(k)).map(([k,v])=>`<p><b>${esc(k)}:</b> ${esc(v)}</p>`).join('')}</td></tr>`}).join('')}</table></div>`}
+${R.map((r,i)=>{const mm=mean(MX.flatMap(m=>m.q.map((_,j)=>num(r[K(m,j)]))));return`<tr class="r" onclick="this.nextElementSibling.classList.toggle('hide')"><td>${esc(String(r['Data de resposta']||'').slice(0,10))}</td><td>${esc(r.Nome||'Não informado')}</td><td>${esc(r.Empresa)}</td><td>${esc(r.Departamento)}</td><td>${esc(r['Tipo de desligamento'])}</td><td>${f2(mm)}</td><td>${esc(r.NPS)}</td><td>${esc(r.Voltaria)}</td></tr><tr class="hide"><td colspan="8" class="dt">${Object.entries(r).filter(([k,v])=>v!==''&&!/^(Nome|Empresa|Departamento|Tipo de desligamento|NPS|Voltaria|Data de resposta)$/.test(k)).map(([k,v])=>`<p><b>${esc(k)}:</b> ${esc(v)}</p>`).join('')}</td></tr>`}).join('')}</table></div>`}
 function csv(){const k=[...new Set(FR.flatMap(Object.keys))],c=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
 const t='\ufeff'+[k.map(c).join(';'),...FR.map(r=>k.map(x=>c(r[x])).join(';'))].join('\n'),a=document.createElement('a');
 a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download='desligamentos.csv';a.click()}
