@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pesquisa de Desligamento</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--p:#7a1280;--pl:#f6eaf7;--bg:#f4f5f7;--c:#fff;--t:#1b1b1f;--m:#6b6b76;--b:#d9d9e0;--ok:#1f9d55;--bad:#d64545}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 Lexend,system-ui,sans-serif}
+header{background:var(--c);border-bottom:1px solid var(--b);position:sticky;top:0;z-index:5}
+.bar{max-width:1100px;margin:auto;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bar b{font-size:16px}nav button{border:0;background:none;padding:8px 14px;border-radius:8px;font:inherit;color:var(--m);cursor:pointer}
+nav button.on{background:var(--pl);color:var(--p);font-weight:600}
+main{max-width:1100px;margin:auto;padding:16px}.card{background:var(--c);border-radius:14px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 6px #0001}
+h3{margin:0 0 10px;font-size:14px;font-weight:500}h2{margin:0 0 6px;font-size:18px}.m{color:var(--m);font-size:13px}
+input[type=text],input[type=password],input[type=date],select,textarea{width:100%;padding:10px;border:1px solid var(--b);border-radius:8px;background:#f0f0f1;font:inherit}
+textarea{min-height:90px;resize:vertical}.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{display:flex;gap:8px;align-items:center;padding:6px 0;cursor:pointer}
+.sw{overflow-x:auto}table{border-collapse:collapse;width:100%}th{font-weight:400;font-size:12px;color:var(--m);padding:4px 8px;text-align:center}
+.mx td{padding:10px 8px;text-align:center;border-top:1px solid #eee}.mx td:first-child{text-align:left;min-width:200px}
+input[type=radio],input[type=checkbox]{accent-color:var(--p);width:17px;height:17px}
+.nps{display:flex;gap:6px;flex-wrap:wrap}.nps label{width:42px;height:42px;border:1px solid var(--p);border-radius:10px;display:grid;place-items:center;color:var(--m);font-weight:600;cursor:pointer}
+.nps input{display:none}.nps input:checked+span{background:var(--p);color:#fff}.nps label:has(input:checked){background:var(--p);color:#fff}
+.btn{background:var(--p);color:#fff;border:0;padding:11px 22px;border-radius:8px;font:inherit;font-weight:600;cursor:pointer}
+.btn.o{background:none;color:var(--p);border:1px solid var(--p)}.err{color:var(--bad);font-size:13px;margin:6px 0}
+.hide{display:none}.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.kpi{background:var(--c);border-radius:14px;padding:14px 16px;box-shadow:0 1px 6px #0001}.kpi b{display:block;font-size:26px;color:var(--p)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.row{display:grid;grid-template-columns:150px 1fr 48px;gap:8px;align-items:center;margin:6px 0;font-size:12.5px}
+.tr{background:#eee;border-radius:5px;height:10px}.tr i{display:block;height:100%;background:var(--p);border-radius:5px}
+.fl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.fl>*{width:auto;flex:1;min-width:140px}
+.tb td,.tb th{padding:8px;border-top:1px solid #eee;text-align:left;font-size:12.5px}.tb tr.r{cursor:pointer}.tb tr.r:hover{background:var(--pl)}
+.dt{background:#fafafa;padding:10px 14px}.dt p{margin:4px 0}.ty{text-align:center;padding:40px 20px}
+@media(max-width:600px){.g2{grid-template-columns:1fr}.row{grid-template-columns:110px 1fr 40px}}
+</style></head><body>
+<header><div class="bar"><b>Pesquisa de Desligamento</b><nav><button id="n1" class="on" onclick="tab(1)">Pesquisa</button><button id="n2" onclick="tab(2)">Área do RH</button></nav></div></header>
+<main>
+<div id="v1"><form id="f" onsubmit="return send(event)"></form>
+<div id="ty" class="card ty hide"><h2>Obrigado pela sua participação!</h2><p class="m">Suas respostas foram registradas e ajudarão a melhorar o ambiente de trabalho.</p></div></div>
+<div id="v2" class="hide">
+<div id="lg" class="card" style="max-width:380px;margin:40px auto"><h2>Área do RH</h2><p class="m">Informe a senha para acessar os indicadores.</p>
+<input type="password" id="pw" placeholder="Senha" onkeydown="if(event.key==='Enter')login()"><div id="le" class="err"></div><button class="btn" onclick="login()">Entrar</button></div>
+<div id="db" class="hide"></div></div>
+</main>
+<script>
+/* ===== CONFIGURAÇÃO ===== */
+const API='https://script.google.com/macros/s/AKfycbyA0mnLn91JLfTJzCjdKE192Ej6yHafAPkjUBmyiHud0OkAkjHgvWbNb2pWkgEp6upvcA/exec';            // URL do Web App do Apps Script (vazio = modo teste, salva no navegador)
+const LOCAL_PW='rh2026'; // senha usada SOMENTE no modo teste
+/* ======================== */
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SC=['Insatisfeito','Pouco satisfeito','Satisfeito','Muito satisfeito'];
+const EMP=['Rymo','MMA'],TIPOS=['Pedido de demissão','Demissão sem justa causa','Demissão por justa causa','Término de contrato','Acordo (art. 484-A)','Outro'];
+const TEMPO=['Até 6 meses','6 meses a 1 ano','1 a 3 anos','3 a 5 anos','Mais de 5 anos'],REG=['Presencial','Híbrido','Home-office'];
+const MOT=['Aumento de salário','Problemas com a liderança','Problemas com os pares','Processos da empresa','Pacote de benefícios','Mudança de cidade/estado/país','Adaptação na empresa','Modelo de trabalho','Outros'];
+const MX=[
+{k:'lid',n:'Liderança',t:'Como você avalia a sua liderança imediata?',q:['Relacionamento com o líder','Autonomia na execução das tarefas','Frequência de feedbacks recebidos','Abertura para dar feedbacks ao líder','Impacto da liderança em seu desenvolvimento','Clima organizacional na sua equipe'],x:'O que mais você pode nos falar sobre sua liderança imediata?'},
+{k:'cre',n:'Crescimento',t:'Como você avalia as oportunidades de crescimento profissional?',q:['Oportunidades de desenvolvimento e aquisição de novas competências','Clareza de critérios para movimentações salariais (reconhecimentos e promoções)'],x:'O que mais você pode nos falar sobre crescimento profissional?'},
+{k:'ent',n:'Entregas',t:'Como você avalia as suas entregas de resultado?',q:['Havia alinhamento com o que era esperado das suas entregas','Suas entregas individuais para a empresa','Suas metas impactaram no alcance dos objetivos estratégicos','Você gerou valor para o cliente (interno ou externo)'],x:'O que mais você pode nos falar sobre sua entrega de resultados?'},
+{k:'emp',n:'Empresa',t:'Como você avalia a empresa?',q:['Os valores são exercidos pelos líderes da empresa','Alinhamento dos processos entre as áreas','Canais de comunicação interna (chat/e-mail)','Infraestrutura','Ambiente organizacional','Benefícios','Área de Gente e Cultura','Eventos e ações comemorativas'],x:'O que mais você pode nos falar sobre como você vê a empresa?'}];
+const K=(m,i)=>m.n+' | '+m.q[i],KT=m=>m.n+' - comentário';
+const radios=(name,arr,cb)=>arr.map(o=>`<label class="opt"><input type="radio" name="${name}" value="${esc(o)}" ${cb?`onchange="${cb}"`:''}>${esc(o)}</label>`).join('');
+const sel=(name,arr,ph)=>`<select name="${name}"><option value="">${ph}</option>${arr.map(o=>`<option>${esc(o)}</option>`).join('')}</select>`;
+const ta=(name,t)=>`<section class="card"><h3>${t}</h3><textarea name="${name}"></textarea></section>`;
+function build(){
+let h=`<section class="card"><h2>Entrevista de Desligamento</h2><p class="m">Caro colaborador(a), esta é a Pesquisa de Desligamento. O objetivo é coletar feedbacks do ex-colaborador(a) para entender melhor o ambiente de trabalho e como melhorá-lo. Aguardamos sua resposta.</p></section>
+<section class="card"><div class="g2"><div><h3>Qual seu nome completo? *</h3><input type="text" name="Nome"></div><div><h3>Empresa *</h3>${sel('Empresa',EMP,'Selecione')}</div>
+<div><h3>Qual seu departamento? *</h3><input type="text" name="Departamento"></div><div><h3>Qual era o seu regime de trabalho?</h3>${sel('Regime',REG,'Selecione')}</div>
+<div><h3>Tipo de desligamento *</h3>${sel('Tipo de desligamento',TIPOS,'Selecione')}</div><div><h3>Tempo de casa</h3>${sel('Tempo de casa',TEMPO,'Selecione')}</div>
+<div><h3>Data de desligamento</h3><input type="date" name="Data de desligamento"></div></div></section>
+<section class="card hide" id="mot"><h3>Em caso de desligamento voluntário, quais os motivos o levaram a migrar para outra oportunidade?</h3>${radios('Motivo (voluntário)',MOT)}</section>
+${ta('Ações da empresa','Na sua opinião, quais ações práticas a empresa poderia ter realizado para que o seu desligamento não acontecesse?')}`;
+MX.forEach(m=>{h+=`<section class="card"><h3>${m.t}</h3><div class="sw"><table class="mx"><tr><th></th>${SC.map(s=>`<th>${s}</th>`).join('')}</tr>${m.q.map((q,i)=>`<tr><td>${q}</td>${SC.map((s,j)=>`<td><input type="radio" name="${m.k}_${i}" value="${j+1}" aria-label="${s}"></td>`).join('')}</tr>`).join('')}</table></div></section>${ta(KT(m),m.x)}`});
+h+=`<section class="card"><h3>Você voltaria a trabalhar na empresa? *</h3>${radios('Voltaria',['Sim','Não'])}</section>${ta('Voltaria - por quê','Se sim, em qual área/função, e por quê?')}
+<section class="card"><h3>De 0 a 10, qual a probabilidade de você recomendar nossa empresa a um amigo ou familiar? *</h3><div class="nps">${[...Array(11).keys()].map(n=>`<label><input type="radio" name="NPS" value="${n}">${n}</label>`).join('')}</div></section>
+${ta('Comentário final','Deixe um comentário, elogio ou sugestão de melhoria')}<div id="fe" class="err"></div><button class="btn" id="sb">Enviar pesquisa</button>`;
+$('#f').innerHTML=h;
+$('#f').elements['Tipo de desligamento'].onchange=e=>$('#mot').classList.toggle('hide',e.target.value!=='Pedido de demissão');}
+async function send(e){e.preventDefault();const f=$('#f'),d={},v=n=>f.elements[n]?.value?.trim()||'';
+for(const n of ['Nome','Empresa','Departamento','Regime','Tipo de desligamento','Tempo de casa','Data de desligamento','Ações da empresa','Voltaria - por quê','Comentário final'])d[n]=v(n);
+d['Motivo (voluntário)']=d['Tipo de desligamento']==='Pedido de demissão'?v('Motivo (voluntário)'):'';
+MX.forEach(m=>{m.q.forEach((q,i)=>{d[K(m,i)]=v(m.k+'_'+i)});d[KT(m)]=v(KT(m))});
+d['Voltaria']=v('Voltaria');d['NPS']=v('NPS');
+if(!d.Nome||!d.Empresa||!d.Departamento||!d['Tipo de desligamento']||!d.Voltaria||d.NPS===''){$('#fe').textContent='Preencha os campos obrigatórios (*): nome, empresa, departamento, tipo de desligamento, "voltaria" e nota de recomendação.';return false}
+$('#fe').textContent='';$('#sb').disabled=true;$('#sb').textContent='Enviando...';
+try{if(API)await fetch(API,{method:'POST',mode:'no-cors',body:JSON.stringify(d)});
+else{d['Data de resposta']=new Date().toISOString();const a=JSON.parse(localStorage.getItem('deslig')||'[]');a.push(d);localStorage.setItem('deslig',JSON.stringify(a))}
+f.classList.add('hide');$('#ty').classList.remove('hide');scrollTo(0,0)}
+catch(x){$('#fe').textContent='Erro ao enviar. Tente novamente.';$('#sb').disabled=false;$('#sb').textContent='Enviar pesquisa'}
+return false}
+/* ===== RH ===== */
+let ROWS=[],PW='';
+function tab(n){[1,2].forEach(i=>{$('#v'+i).classList.toggle('hide',i!==n);$('#n'+i).classList.toggle('on',i===n)})}
+async function login(){PW=$('#pw').value;$('#le').textContent='';
+try{if(API){const r=await(await fetch(API+'?action=list&pw='+encodeURIComponent(PW))).json();if(r.error)throw 0;ROWS=r.rows}
+else{if(PW!==LOCAL_PW)throw 0;ROWS=JSON.parse(localStorage.getItem('deslig')||'[]')}
+$('#lg').classList.add('hide');$('#db').classList.remove('hide');dash()}catch(x){$('#le').textContent='Senha incorreta ou erro de conexão.'}}
+const num=x=>x===''||x==null||isNaN(x)?null:+x,mean=a=>{a=a.filter(x=>x!=null);return a.length?a.reduce((s,x)=>s+x,0)/a.length:null};
+const cnt=(rows,k)=>rows.reduce((o,r)=>{const v=r[k];if(v)o[v]=(o[v]||0)+1;return o},{});
+const bars=(o,max,fmt=x=>x)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="row"><span title="${esc(k)}">${esc(k)}</span><div class="tr"><i style="width:${max?v/max*100:0}%"></i></div><b>${fmt(v)}</b></div>`).join('')||'<p class="m">Sem dados.</p>';
+function dash(){
+const ev=['Empresa','Tipo de desligamento'].map(k=>[k,[...new Set(ROWS.map(r=>r[k]).filter(Boolean))]]);
+if(!$('#fe1')){$('#db').innerHTML=`<div class="fl" id="fe1">${ev.map(([k,a])=>`<select id="f_${k[0]}" onchange="dash()"><option value="">${k}: todos</option>${a.map(o=>`<option>${esc(o)}</option>`).join('')}</select>`).join('')}<input type="text" id="fq" placeholder="Buscar nome/departamento" oninput="dash()"><button class="btn o" onclick="csv()">Exportar CSV</button></div><div id="out"></div>`}
+const fe=$('#f_E').value,ft=$('#f_T').value,q=$('#fq').value.toLowerCase();
+const R=ROWS.filter(r=>(!fe||r.Empresa===fe)&&(!ft||r['Tipo de desligamento']===ft)&&(!q||(r.Nome+' '+r.Departamento).toLowerCase().includes(q)));window.FR=R;
+const n=R.length,np=R.map(r=>num(r.NPS)).filter(x=>x!=null),pr=np.filter(x=>x>=9).length,de=np.filter(x=>x<=6).length,nps=np.length?Math.round((pr-de)/np.length*100):null;
+const vol=R.filter(r=>r.Voltaria),sim=vol.filter(r=>r.Voltaria==='Sim').length;
+const qa=[],ba={};MX.forEach(m=>{const a=m.q.map((_,i)=>{const v=mean(R.map(r=>num(r[K(m,i)])));qa.push([m.n+': '+m.q[i],v]);return v});ba[m.n]=mean(a)});
+const all=mean(qa.map(x=>x[1])),f2=x=>x==null?'-':x.toFixed(2).replace('.',','),vo=R.filter(r=>r['Tipo de desligamento']==='Pedido de demissão').length;
+const crit=Object.fromEntries(qa.filter(x=>x[1]!=null).sort((a,b)=>a[1]-b[1]).slice(0,6));
+const dep=cnt(R,'Departamento'),mx=o=>Math.max(0,...Object.values(o));
+const mot=cnt(R,'Motivo (voluntário)'),tp=cnt(R,'Tipo de desligamento'),tc=cnt(R,'Tempo de casa');
+$('#out').innerHTML=`<div class="kpis"><div class="kpi">Respostas<b>${n}</b></div><div class="kpi">NPS<b>${nps??'-'}</b></div><div class="kpi">Satisfação geral (1-4)<b>${f2(all)}</b></div><div class="kpi">Voltaria a trabalhar<b>${vol.length?Math.round(sim/vol.length*100)+'%':'-'}</b></div><div class="kpi">Saídas voluntárias<b>${n?Math.round(vo/n*100)+'%':'-'}</b></div></div>
+<div class="grid"><div class="card"><h3>Principais motivos (voluntário)</h3>${bars(mot,mx(mot))}</div>
+<div class="card"><h3>Média por bloco (1 a 4)</h3>${bars(Object.fromEntries(Object.entries(ba).filter(x=>x[1]!=null)),4,f2)}</div>
+<div class="card"><h3>Pontos críticos (menores médias)</h3>${bars(Object.fromEntries(Object.entries(crit).map(([k,v])=>[k.split(': ')[1].slice(0,40),v])),4,f2)}</div>
+<div class="card"><h3>Tipo de desligamento</h3>${bars(tp,mx(tp))}</div>
+<div class="card"><h3>Tempo de casa</h3>${bars(tc,mx(tc))}</div>
+<div class="card"><h3>Departamentos</h3>${bars(dep,mx(dep))}</div></div>
+<div class="card sw" style="margin-top:14px"><h3>Respostas (clique para ver detalhes)</h3><table class="tb"><tr><th>Data</th><th>Nome</th><th>Empresa</th><th>Departamento</th><th>Tipo</th><th>Média</th><th>NPS</th><th>Voltaria</th></tr>
+${R.map((r,i)=>{const mm=mean(MX.flatMap(m=>m.q.map((_,j)=>num(r[K(m,j)]))));return`<tr class="r" onclick="this.nextElementSibling.classList.toggle('hide')"><td>${esc(String(r['Data de resposta']||'').slice(0,10))}</td><td>${esc(r.Nome)}</td><td>${esc(r.Empresa)}</td><td>${esc(r.Departamento)}</td><td>${esc(r['Tipo de desligamento'])}</td><td>${f2(mm)}</td><td>${esc(r.NPS)}</td><td>${esc(r.Voltaria)}</td></tr><tr class="hide"><td colspan="8" class="dt">${Object.entries(r).filter(([k,v])=>v!==''&&!/^(Nome|Empresa|Departamento|Tipo de desligamento|NPS|Voltaria|Data de resposta)$/.test(k)).map(([k,v])=>`<p><b>${esc(k)}:</b> ${esc(v)}</p>`).join('')}</td></tr>`}).join('')}</table></div>`}
+function csv(){const k=[...new Set(FR.flatMap(Object.keys))],c=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+const t='\ufeff'+[k.map(c).join(';'),...FR.map(r=>k.map(x=>c(r[x])).join(';'))].join('\n'),a=document.createElement('a');
+a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download='desligamentos.csv';a.click()}
+build();
+</script></body></html>
